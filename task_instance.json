@@ -1,0 +1,18 @@
+{
+  "instance_id": "psf_requests__issue_2949_auth_strip",
+  "repo": "psf/requests",
+  "base_commit": "e305e94b29bb88a25c1ff0ef3538a7c293671234",
+  "problem_statement": "### Security / Defect: Authorization header persists across cross-origin HTTP redirects\n\nWhen a client issues an authenticated request with custom `Authorization` or `Proxy-Authorization` headers and receives a 301/302/307 redirect pointing to a different origin (scheme, host, or port), the `Session.send()` method currently forwards all original headers verbatim.\n\n### Expected Behaviour\nWhen following redirects, sensitive authentication headers (`Authorization`, `Proxy-Authorization`) must be stripped if the redirect target URL does not match the original request host and port.",
+  "hints_text": "Check redirect handling in `Session.rebuild_auth()`. Compare `urlparse(original_url).hostname` against `urlparse(redirect_url).hostname`.",
+  "created_at": "2026-11-18T18:50:00Z",
+  "version": "1.0.0",
+  "FAIL_TO_PASS": [
+    "tests.test_redirect_auth_leak.TestRedirectAuthLeak.test_cross_origin_redirect_strips_auth_header",
+    "tests.test_redirect_auth_leak.TestRedirectAuthLeak.test_same_origin_redirect_preserves_auth_header"
+  ],
+  "PASS_TO_PASS": [
+    "tests.test_client_regression.TestClientRegression.test_basic_get_request",
+    "tests.test_client_regression.TestClientRegression.test_retry_on_status_503",
+    "tests.test_client_regression.TestClientRegression.test_custom_headers_propagation"
+  ]
+}

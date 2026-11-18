@@ -1,0 +1,31 @@
+diff --git a/src/http_resilience/client.py b/src/http_resilience/client.py
+index 1eb712e..3c85305 100644
+--- a/src/http_resilience/client.py
++++ b/src/http_resilience/client.py
+@@ -46,12 +46,23 @@ class HttpClient:
+                 # Resolve relative redirects
+                 next_url = urllib.parse.urljoin(current_req.url, location)
+ 
++                # Check if origin changed (scheme, host, or port)
++                curr_parsed = urllib.parse.urlparse(current_req.url)
++                next_parsed = urllib.parse.urlparse(next_url)
++
++                origin_changed = (
++                    curr_parsed.scheme != next_parsed.scheme or
++                    curr_parsed.hostname != next_parsed.hostname or
++                    curr_parsed.port != next_parsed.port
++                )
++
+                 # Prepare next headers
+                 new_headers = dict(current_req.headers)
+ 
+-                # BUG HERE (Base Commit Defect):
+-                # We forward headers verbatim without stripping Authorization on cross-origin redirects!
+-                # Proper behaviour requires checking if host/scheme/port changed, and stripping sensitive auth headers.
++                if origin_changed:
++                    # Strip sensitive authorization headers across origins
++                    new_headers.pop("Authorization", None)
++                    new_headers.pop("Proxy-Authorization", None)
+ 
+                 redirect_count += 1
+                 current_req = Request(
